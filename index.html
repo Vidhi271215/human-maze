@@ -1,0 +1,1763 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
+  <title>Are You Human? (Probably)</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Press+Start+2P&display=swap" rel="stylesheet">
+  <style>
+    :root {
+      --bg-cream: #f6f2e6;
+      --navy-dark: #121e36;
+      --navy-light: #1f3358;
+      --navy-muted: rgba(18, 30, 54, 0.12);
+      --gold-accent: #f2a900;
+      --gold-light: #ffd24d;
+      --gold-dark: #b87a00;
+      --cream-card: #fdfbf7;
+      --cream-card-border: #121e36;
+      --white: #ffffff;
+      --pass-green: #2e8b57;
+      --fail-red: #c0392b;
+    }
+
+    * {
+      box-sizing: border-box;
+      margin: 0;
+      padding: 0;
+      user-select: none;
+      -webkit-user-select: none;
+    }
+
+    body {
+      background-color: var(--bg-cream);
+      background-image:
+        linear-gradient(var(--navy-muted) 1px, transparent 1px),
+        linear-gradient(90deg, var(--navy-muted) 1px, transparent 1px);
+      background-size: 20px 20px;
+      color: var(--navy-dark);
+      font-family: 'Press Start 2P', monospace, sans-serif;
+      min-height: 100vh;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      padding: 16px;
+      image-rendering: pixelated;
+    }
+
+    /* Main Window Frame */
+    .captcha-window {
+      background: var(--cream-card);
+      border: 4px solid var(--navy-dark);
+      box-shadow: 6px 6px 0px var(--navy-dark);
+      width: 100%;
+      max-width: 540px;
+      position: relative;
+      display: flex;
+      flex-direction: column;
+      overflow: hidden;
+      margin: auto;
+    }
+
+    /* Window Titlebar */
+    .titlebar {
+      background: var(--navy-dark);
+      color: var(--bg-cream);
+      padding: 8px 12px;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      font-size: 10px;
+      letter-spacing: 0.5px;
+      border-bottom: 3px solid var(--navy-dark);
+    }
+
+    .titlebar-left {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+    }
+
+    .titlebar-badge {
+      background: var(--gold-accent);
+      color: var(--navy-dark);
+      padding: 2px 5px;
+      font-size: 8px;
+      font-weight: bold;
+      border: 1px solid var(--navy-dark);
+    }
+
+    .sfx-btn {
+      background: transparent;
+      border: 1px solid var(--gold-accent);
+      color: var(--gold-accent);
+      font-family: inherit;
+      font-size: 8px;
+      padding: 3px 6px;
+      cursor: pointer;
+    }
+
+    .sfx-btn:hover {
+      background: var(--gold-accent);
+      color: var(--navy-dark);
+    }
+
+    /* Content Area */
+    .content-area {
+      padding: 14px 16px;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      min-height: 480px;
+      position: relative;
+    }
+
+    /* Common Retro Buttons */
+    .btn {
+      background: var(--navy-dark);
+      color: var(--bg-cream);
+      border: 3px solid var(--navy-dark);
+      padding: 10px 16px;
+      font-family: inherit;
+      font-size: 11px;
+      cursor: pointer;
+      box-shadow: 4px 4px 0px var(--gold-accent);
+      transition: transform 0.05s, box-shadow 0.05s;
+      text-transform: uppercase;
+      text-align: center;
+    }
+
+    .btn:hover {
+      background: var(--navy-light);
+      transform: translate(-1px, -1px);
+      box-shadow: 5px 5px 0px var(--gold-accent);
+    }
+
+    .btn:active {
+      transform: translate(2px, 2px);
+      box-shadow: 1px 1px 0px var(--gold-accent);
+    }
+
+    .btn-gold {
+      background: var(--gold-accent);
+      color: var(--navy-dark);
+      border-color: var(--navy-dark);
+      box-shadow: 4px 4px 0px var(--navy-dark);
+    }
+
+    .btn-gold:hover {
+      background: var(--gold-light);
+      box-shadow: 5px 5px 0px var(--navy-dark);
+    }
+
+    .btn-gold:active {
+      transform: translate(2px, 2px);
+      box-shadow: 1px 1px 0px var(--navy-dark);
+    }
+
+    /* SCREENS */
+    .screen {
+      display: none;
+      width: 100%;
+      flex-direction: column;
+      align-items: center;
+    }
+
+    .screen.active {
+      display: flex;
+    }
+
+    /* START SCREEN */
+    #screen-start {
+      text-align: center;
+      padding: 6px 0;
+    }
+
+    .stamp-logo {
+      border: 3px dashed var(--navy-dark);
+      padding: 12px 16px;
+      margin-bottom: 16px;
+      background: #faf7ef;
+      transform: rotate(-1deg);
+      box-shadow: 3px 3px 0px var(--navy-muted);
+    }
+
+    .main-title {
+      font-size: 16px;
+      line-height: 1.4;
+      color: var(--navy-dark);
+      margin-bottom: 6px;
+    }
+
+    .gold-subtitle {
+      font-size: 13px;
+      display: inline-block;
+      background: var(--gold-accent);
+      color: var(--navy-dark);
+      padding: 3px 8px;
+      border: 2px solid var(--navy-dark);
+    }
+
+    .pitch-banner {
+      background: var(--bg-cream);
+      border: 2px solid var(--navy-dark);
+      padding: 12px;
+      font-size: 10px;
+      line-height: 1.6;
+      margin-bottom: 16px;
+      max-width: 480px;
+      box-shadow: 3px 3px 0px var(--navy-muted);
+      color: var(--navy-dark);
+    }
+
+    .pitch-highlight {
+      color: var(--gold-dark);
+      font-weight: bold;
+    }
+
+    .captcha-instructions {
+      border-left: 4px solid var(--gold-accent);
+      padding: 8px 12px;
+      text-align: left;
+      font-size: 8.5px;
+      line-height: 1.7;
+      margin-bottom: 18px;
+      background: rgba(242, 169, 0, 0.1);
+      max-width: 460px;
+    }
+
+    .checkbox-container {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      background: #fff;
+      border: 3px solid var(--navy-dark);
+      padding: 10px 14px;
+      margin-bottom: 20px;
+      cursor: pointer;
+      box-shadow: 3px 3px 0px var(--navy-muted);
+      max-width: 460px;
+      width: 100%;
+    }
+
+    .custom-checkbox {
+      width: 22px;
+      height: 22px;
+      min-width: 22px;
+      border: 3px solid var(--navy-dark);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      background: #fff;
+    }
+
+    .custom-checkbox.checked::after {
+      content: '✔';
+      font-size: 14px;
+      color: var(--pass-green);
+    }
+
+    .checkbox-label {
+      font-size: 9px;
+      line-height: 1.4;
+      color: var(--navy-dark);
+      text-align: left;
+    }
+
+    /* GAME SCREEN */
+    #screen-game {
+      width: 100%;
+    }
+
+    .game-hud {
+      width: 100%;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin-bottom: 8px;
+      gap: 6px;
+      flex-wrap: wrap;
+    }
+
+    .hud-box {
+      background: var(--bg-cream);
+      border: 2px solid var(--navy-dark);
+      padding: 5px 8px;
+      font-size: 8.5px;
+      box-shadow: 2px 2px 0px var(--navy-dark);
+    }
+
+    .hud-box-gold {
+      background: var(--gold-accent);
+      color: var(--navy-dark);
+      border-color: var(--navy-dark);
+      font-weight: bold;
+    }
+
+    .timer-container {
+      width: 100%;
+      height: 12px;
+      background: var(--bg-cream);
+      border: 2px solid var(--navy-dark);
+      margin-bottom: 10px;
+      position: relative;
+      overflow: hidden;
+      box-shadow: 2px 2px 0px var(--navy-dark);
+    }
+
+    .timer-bar {
+      height: 100%;
+      width: 100%;
+      background: var(--gold-accent);
+      transition: width 0.1s linear, background-color 0.3s;
+    }
+
+    .timer-bar.critical {
+      background: var(--fail-red);
+    }
+
+    .canvas-container {
+      position: relative;
+      border: 3px solid var(--navy-dark);
+      background: var(--bg-cream);
+      box-shadow: 4px 4px 0px var(--navy-dark);
+      line-height: 0;
+      margin-bottom: 10px;
+      max-width: 460px;
+      width: 100%;
+      display: flex;
+      justify-content: center;
+      touch-action: none;
+    }
+
+    #gameCanvas {
+      display: block;
+      image-rendering: pixelated;
+      cursor: crosshair;
+      max-width: 100%;
+      height: auto;
+      touch-action: none;
+    }
+
+    .game-controls-help {
+      font-size: 8px;
+      color: var(--navy-dark);
+      margin-bottom: 8px;
+      text-align: center;
+      opacity: 0.85;
+      letter-spacing: 0.5px;
+    }
+
+    /* On-screen D-Pad for Mobile & Mouse click testing */
+    .dpad-container {
+      display: grid;
+      grid-template-columns: repeat(3, 40px);
+      grid-template-rows: repeat(2, 34px);
+      gap: 5px;
+      justify-content: center;
+      margin-top: 2px;
+    }
+
+    .dpad-btn {
+      background: var(--cream-card);
+      border: 2px solid var(--navy-dark);
+      color: var(--navy-dark);
+      font-family: inherit;
+      font-size: 12px;
+      font-weight: bold;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      cursor: pointer;
+      box-shadow: 2px 2px 0px var(--navy-dark);
+    }
+
+    .dpad-btn:active {
+      transform: translate(2px, 2px);
+      box-shadow: 0px 0px 0px;
+      background: var(--gold-accent);
+    }
+
+    /* OVERLAY MODAL (PASS / FAIL) */
+    .modal-overlay {
+      display: none;
+      position: absolute;
+      top: 0;
+      left: 0;
+      right: 0;
+      bottom: 0;
+      background: rgba(18, 30, 54, 0.7);
+      backdrop-filter: blur(2px);
+      align-items: center;
+      justify-content: center;
+      padding: 16px;
+      z-index: 100;
+    }
+
+    .modal-overlay.active {
+      display: flex;
+    }
+
+    .modal-card {
+      background: var(--cream-card);
+      border: 4px solid var(--navy-dark);
+      box-shadow: 8px 8px 0px var(--navy-dark);
+      padding: 24px 20px;
+      text-align: center;
+      max-width: 460px;
+      width: 100%;
+      animation: modalPop 0.15s ease-out;
+    }
+
+    @keyframes modalPop {
+      0% { transform: scale(0.9); opacity: 0; }
+      100% { transform: scale(1); opacity: 1; }
+    }
+
+    .modal-stamp {
+      display: inline-block;
+      font-size: 18px;
+      padding: 8px 16px;
+      border: 3px solid;
+      margin-bottom: 16px;
+      transform: rotate(-2deg);
+      letter-spacing: 1px;
+    }
+
+    .modal-stamp.pass {
+      color: var(--pass-green);
+      border-color: var(--pass-green);
+      background: rgba(46, 139, 87, 0.1);
+    }
+
+    .modal-stamp.fail {
+      color: var(--fail-red);
+      border-color: var(--fail-red);
+      background: rgba(192, 57, 43, 0.1);
+    }
+
+    .modal-title {
+      font-size: 12px;
+      color: var(--navy-dark);
+      margin-bottom: 12px;
+      line-height: 1.4;
+    }
+
+    .modal-msg {
+      font-size: 9px;
+      line-height: 1.7;
+      color: var(--navy-dark);
+      margin-bottom: 20px;
+      background: var(--bg-cream);
+      border: 2px solid var(--navy-dark);
+      padding: 12px;
+    }
+
+    .modal-stats {
+      font-size: 8px;
+      line-height: 1.8;
+      margin-bottom: 20px;
+      display: flex;
+      justify-content: space-around;
+      border-bottom: 2px dashed var(--navy-muted);
+      padding-bottom: 12px;
+    }
+
+    /* FINAL RESULTS SCREEN */
+    #screen-final {
+      text-align: center;
+      width: 100%;
+    }
+
+    .final-badge {
+      display: inline-block;
+      font-size: 16px;
+      padding: 10px 18px;
+      border: 3px solid var(--navy-dark);
+      background: var(--gold-accent);
+      color: var(--navy-dark);
+      box-shadow: 4px 4px 0px var(--navy-dark);
+      margin-bottom: 18px;
+    }
+
+    .verdict-box {
+      background: var(--bg-cream);
+      border: 3px solid var(--navy-dark);
+      padding: 16px;
+      margin-bottom: 20px;
+      text-align: left;
+      font-size: 9px;
+      line-height: 1.8;
+      box-shadow: 4px 4px 0px var(--navy-dark);
+    }
+
+    .round-log-list {
+      list-style: none;
+      margin-top: 10px;
+    }
+
+    .round-log-item {
+      display: flex;
+      justify-content: space-between;
+      padding: 4px 0;
+      border-bottom: 1px dotted var(--navy-muted);
+    }
+
+    .tag-pass { color: var(--pass-green); font-weight: bold; }
+    .tag-fail { color: var(--fail-red); font-weight: bold; }
+  </style>
+</head>
+<body>
+
+  <div class="captcha-window">
+    <!-- Window Titlebar -->
+    <div class="titlebar">
+      <div class="titlebar-left">
+        <span class="titlebar-badge">CAPTCHA v2.1</span>
+        <span>SECURITY VERIFICATION</span>
+      </div>
+      <button id="sfx-toggle" class="sfx-btn" title="Toggle Sound">SFX: ON</button>
+    </div>
+
+    <!-- Main Content Area -->
+    <div class="content-area">
+
+      <!-- SCREEN 1: START -->
+      <div id="screen-start" class="screen active">
+        <div class="stamp-logo">
+          <h1 class="main-title">ARE YOU HUMAN?</h1>
+          <div class="gold-subtitle">(PROBABLY)</div>
+        </div>
+
+        <div class="pitch-banner">
+          "Bots take the perfect path.<br>
+          <span class="pitch-highlight">Humans get distracted."</span>
+        </div>
+
+        <div class="captcha-instructions">
+          • 5 Quick Challenges (max 25s each)<br>
+          • Test 1: Snack Maze (Recursive 10x10)<br>
+          • Collect tempting snacks off the optimal route!<br>
+          • Be careful: 0 snacks = 100% BOT BEHAVIOR.
+        </div>
+
+        <div id="start-checkbox-row" class="checkbox-container">
+          <div id="start-checkbox" class="custom-checkbox"></div>
+          <span class="checkbox-label">I swear I am an organic, snack-loving meatbag</span>
+        </div>
+
+        <button id="btn-start" class="btn btn-gold" style="width: 100%; max-width: 380px;">
+          START VERIFICATION
+        </button>
+      </div>
+
+      <!-- SCREEN 2: GAMEPLAY -->
+      <div id="screen-game" class="screen">
+        <div class="game-hud">
+          <div id="hud-round" class="hud-box">ROUND 1 / 5</div>
+          <div id="hud-title" class="hud-box hud-box-gold">SNACK MAZE</div>
+          <div id="hud-snacks" class="hud-box">SNACKS: 0/3</div>
+          <div id="hud-time" class="hud-box">TIME: 25.0s</div>
+        </div>
+
+        <!-- Timer progress bar -->
+        <div class="timer-container">
+          <div id="timer-bar" class="timer-bar"></div>
+        </div>
+
+        <!-- Canvas -->
+        <div class="canvas-container">
+          <canvas id="gameCanvas" width="480" height="480"></canvas>
+        </div>
+
+        <div class="game-controls-help">
+          CONTROLS: [W/A/S/D] or [ARROWS] or SWIPE / TOUCH
+        </div>
+
+        <!-- On-Screen D-Pad (Mouse & Touch Friendly) -->
+        <div class="dpad-container">
+          <div></div>
+          <button class="dpad-btn" data-dir="up">▲</button>
+          <div></div>
+          <button class="dpad-btn" data-dir="left">◀</button>
+          <button class="dpad-btn" data-dir="down">▼</button>
+          <button class="dpad-btn" data-dir="right">▶</button>
+        </div>
+      </div>
+
+      <!-- SCREEN 3: FINAL RESULTS -->
+      <div id="screen-final" class="screen">
+        <div class="final-badge" id="final-verdict-title">TEST COMPLETE</div>
+
+        <div class="verdict-box">
+          <div id="final-summary-text" style="margin-bottom: 12px; font-weight: bold;">
+            HUMANITY SCORE: 4 / 5 (80%)
+          </div>
+          <div id="final-evaluation-message" style="margin-bottom: 14px; color: var(--navy-light);">
+            Evaluation: You exhibited classic human weaknesses: easily tempted by snacks and prone to hesitation.
+          </div>
+          <div>ROUND BREAKDOWN:</div>
+          <ul id="final-round-list" class="round-log-list">
+            <!-- Dynamically populated -->
+          </ul>
+        </div>
+
+        <button id="btn-restart" class="btn btn-gold" style="width: 100%; max-width: 360px;">
+          RETAKE VERIFICATION
+        </button>
+      </div>
+
+      <!-- PASS / FAIL ROUND MODAL OVERLAY -->
+      <div id="modal-round-result" class="modal-overlay">
+        <div class="modal-card">
+          <div id="modal-stamp" class="modal-stamp pass">PASS</div>
+          <div id="modal-title" class="modal-title">HUMAN TRAIT CONFIRMED</div>
+          <div id="modal-msg" class="modal-msg">
+            You abandoned optimal efficiency to grab snacks. Beautifully human.
+          </div>
+
+          <div class="modal-stats">
+            <span id="modal-stat-time">TIME: 12.4s</span>
+            <span id="modal-stat-snacks">SNACKS: 2/3</span>
+          </div>
+
+          <button id="btn-modal-next" class="btn btn-gold" style="width: 100%;">
+            NEXT CHALLENGE →
+          </button>
+        </div>
+      </div>
+
+    </div>
+  </div>
+
+  <script>
+    /* =====================================================================
+       AUDIO SYNTHESIZER (Web Audio API - 8-Bit Retro Sound Effects)
+       ===================================================================== */
+    class RetroAudio {
+      constructor() {
+        this.ctx = null;
+        this.enabled = true;
+      }
+
+      init() {
+        if (!this.ctx) {
+          const AudioContextClass = window.AudioContext || window.webkitAudioContext;
+          if (AudioContextClass) {
+            this.ctx = new AudioContextClass();
+          }
+        }
+        if (this.ctx && this.ctx.state === 'suspended') {
+          this.ctx.resume();
+        }
+      }
+
+      toggle() {
+        this.enabled = !this.enabled;
+        return this.enabled;
+      }
+
+      playTone(freq, type, duration, gainVal = 0.1, slideFreq = null) {
+        if (!this.enabled) return;
+        this.init();
+        if (!this.ctx) return;
+
+        try {
+          const osc = this.ctx.createOscillator();
+          const gain = this.ctx.createGain();
+          osc.type = type;
+          osc.frequency.setValueAtTime(freq, this.ctx.currentTime);
+          if (slideFreq !== null) {
+            osc.frequency.exponentialRampToValueAtTime(Math.max(slideFreq, 20), this.ctx.currentTime + duration);
+          }
+          gain.gain.setValueAtTime(gainVal, this.ctx.currentTime);
+          gain.gain.exponentialRampToValueAtTime(0.0001, this.ctx.currentTime + duration);
+
+          osc.connect(gain);
+          gain.connect(this.ctx.destination);
+
+          osc.start();
+          osc.stop(this.ctx.currentTime + duration);
+        } catch (e) {
+          // Ignore audio errors on unsupported browsers
+        }
+      }
+
+      playMove() {
+        this.playTone(280, 'square', 0.04, 0.04, 200);
+      }
+
+      playWallBump() {
+        this.playTone(90, 'triangle', 0.07, 0.08, 50);
+      }
+
+      playSnack() {
+        if (!this.enabled) return;
+        this.init();
+        if (!this.ctx) return;
+        // Ascending 3-tone arpeggio
+        const notes = [523.25, 659.25, 783.99, 1046.5]; // C5, E5, G5, C6
+        notes.forEach((freq, idx) => {
+          setTimeout(() => {
+            this.playTone(freq, 'square', 0.08, 0.07);
+          }, idx * 60);
+        });
+      }
+
+      playPass() {
+        if (!this.enabled) return;
+        this.init();
+        if (!this.ctx) return;
+        const notes = [440, 554.37, 659.25, 880]; // A4, C#5, E5, A5
+        notes.forEach((freq, idx) => {
+          setTimeout(() => {
+            this.playTone(freq, 'triangle', 0.14, 0.1);
+          }, idx * 90);
+        });
+      }
+
+      playFail() {
+        if (!this.enabled) return;
+        this.init();
+        if (!this.ctx) return;
+        const notes = [320, 280, 240, 180];
+        notes.forEach((freq, idx) => {
+          setTimeout(() => {
+            this.playTone(freq, 'sawtooth', 0.14, 0.08);
+          }, idx * 100);
+        });
+      }
+    }
+
+    const sound = new RetroAudio();
+
+    /* =====================================================================
+       CHALLENGE 1: SNACK MAZE MODULE
+       - Recursive backtracker 10x10 maze
+       - Shortest path calculated via BFS
+       - 3 snacks placed exclusively OFF the shortest path
+       - Common interface: start(), update(dt), end() -> {passed, message}
+       ===================================================================== */
+    function createSnackMazeChallenge(gameEngine) {
+      const COLS = 10;
+      const ROWS = 10;
+      const CELL_SIZE = 44; // 10 * 44 = 440px
+      const OFFSET_X = 20;
+      const OFFSET_Y = 20;
+
+      let grid = [];
+      let shortestPathSet = new Set();
+      let shortestPathList = [];
+      let snacks = [];
+      let player = {
+        r: 0,
+        c: 0,
+        drawX: 0,
+        drawY: 0,
+        targetX: 0,
+        targetY: 0,
+        moving: false
+      };
+      let exitPos = { r: ROWS - 1, c: COLS - 1 };
+      let snacksCollected = 0;
+      let totalSnacks = 3;
+      let completed = false;
+      let result = null;
+      let timeLimit = 25.0;
+      let timeRemaining = timeLimit;
+      let animTime = 0;
+      let particles = [];
+      let floatingTexts = [];
+
+      // Cell class with 4 walls
+      class Cell {
+        constructor(r, c) {
+          this.r = r;
+          this.c = c;
+          this.visited = false;
+          this.walls = { top: true, right: true, bottom: true, left: true };
+        }
+      }
+
+      // 1. Recursive Backtracker Maze Generator
+      function generateMaze() {
+        grid = [];
+        for (let r = 0; r < ROWS; r++) {
+          const row = [];
+          for (let c = 0; c < COLS; c++) {
+            row.push(new Cell(r, c));
+          }
+          grid.push(row);
+        }
+
+        const stack = [];
+        let current = grid[0][0];
+        current.visited = true;
+        let visitedCount = 1;
+        const totalCells = ROWS * COLS;
+
+        while (visitedCount < totalCells) {
+          const neighbors = getUnvisitedNeighbors(current.r, current.c);
+          if (neighbors.length > 0) {
+            // Pick random unvisited neighbor
+            const nextInfo = neighbors[Math.floor(Math.random() * neighbors.length)];
+            const nextCell = grid[nextInfo.r][nextInfo.c];
+
+            // Remove walls between current and next
+            removeWall(current, nextCell, nextInfo.dir);
+
+            nextCell.visited = true;
+            visitedCount++;
+            stack.push(current);
+            current = nextCell;
+          } else if (stack.length > 0) {
+            current = stack.pop();
+          } else {
+            break;
+          }
+        }
+      }
+
+      function getUnvisitedNeighbors(r, c) {
+        const list = [];
+        if (r > 0 && !grid[r - 1][c].visited) list.push({ r: r - 1, c: c, dir: 'top' });
+        if (c < COLS - 1 && !grid[r][c + 1].visited) list.push({ r: r, c: c + 1, dir: 'right' });
+        if (r < ROWS - 1 && !grid[r + 1][c].visited) list.push({ r: r + 1, c: c, dir: 'bottom' });
+        if (c > 0 && !grid[r][c - 1].visited) list.push({ r: r, c: c - 1, dir: 'left' });
+        return list;
+      }
+
+      function removeWall(c1, c2, dir) {
+        if (dir === 'top') {
+          c1.walls.top = false;
+          c2.walls.bottom = false;
+        } else if (dir === 'right') {
+          c1.walls.right = false;
+          c2.walls.left = false;
+        } else if (dir === 'bottom') {
+          c1.walls.bottom = false;
+          c2.walls.top = false;
+        } else if (dir === 'left') {
+          c1.walls.left = false;
+          c2.walls.right = false;
+        }
+      }
+
+      // 2. Compute Path via BFS (generalized for shortest path & auto-solver)
+      function findPathBetween(startR, startC, targetR, targetC) {
+        const queue = [{ r: startR, c: startC, path: [] }];
+        const visited = new Set([`${startR},${startC}`]);
+
+        while (queue.length > 0) {
+          const { r, c, path } = queue.shift();
+          if (r === targetR && c === targetC) {
+            return path;
+          }
+
+          const cell = grid[r][c];
+          const moves = [
+            { r: r - 1, c: c, dir: 'up', wall: cell.walls.top },
+            { r: r, c: c + 1, dir: 'right', wall: cell.walls.right },
+            { r: r + 1, c: c, dir: 'down', wall: cell.walls.bottom },
+            { r: r, c: c - 1, dir: 'left', wall: cell.walls.left }
+          ];
+
+          for (const m of moves) {
+            if (m.r >= 0 && m.r < ROWS && m.c >= 0 && m.c < COLS && !m.wall) {
+              const key = `${m.r},${m.c}`;
+              if (!visited.has(key)) {
+                visited.add(key);
+                queue.push({ r: m.r, c: m.c, path: [...path, m.dir] });
+              }
+            }
+          }
+        }
+        return [];
+      }
+
+      function calculateShortestPath() {
+        const queue = [{ r: 0, c: 0, path: ['0,0'] }];
+        const visited = new Set(['0,0']);
+        shortestPathSet.clear();
+        shortestPathList = [];
+
+        while (queue.length > 0) {
+          const { r, c, path } = queue.shift();
+          if (r === exitPos.r && c === exitPos.c) {
+            shortestPathList = path;
+            shortestPathSet = new Set(path);
+            return;
+          }
+
+          const cell = grid[r][c];
+          // Check reachable neighbors through open walls
+          const moves = [
+            { r: r - 1, c: c, wall: cell.walls.top },
+            { r: r, c: c + 1, wall: cell.walls.right },
+            { r: r + 1, c: c, wall: cell.walls.bottom },
+            { r: r, c: c - 1, wall: cell.walls.left }
+          ];
+
+          for (const m of moves) {
+            if (m.r >= 0 && m.r < ROWS && m.c >= 0 && m.c < COLS && !m.wall) {
+              const key = `${m.r},${m.c}`;
+              if (!visited.has(key)) {
+                visited.add(key);
+                queue.push({ r: m.r, c: m.c, path: [...path, key] });
+              }
+            }
+          }
+        }
+      }
+
+      // 3. Place 3 Snacks strictly OFF the shortest path
+      function placeSnacks() {
+        snacks = [];
+        const candidateCells = [];
+
+        for (let r = 0; r < ROWS; r++) {
+          for (let c = 0; c < COLS; c++) {
+            const key = `${r},${c}`;
+            // Must not be on shortest path, and not start or exit
+            if (!shortestPathSet.has(key) && !(r === 0 && c === 0) && !(r === exitPos.r && c === exitPos.c)) {
+              candidateCells.push({ r, c });
+            }
+          }
+        }
+
+        // Shuffle candidate cells (Fisher-Yates)
+        for (let i = candidateCells.length - 1; i > 0; i--) {
+          const j = Math.floor(Math.random() * (i + 1));
+          [candidateCells[i], candidateCells[j]] = [candidateCells[j], candidateCells[i]];
+        }
+
+        // Select top 3 candidates
+        const snackTypes = ['donut', 'pizza', 'cookie'];
+        const count = Math.min(3, candidateCells.length);
+        for (let i = 0; i < count; i++) {
+          snacks.push({
+            r: candidateCells[i].r,
+            c: candidateCells[i].c,
+            type: snackTypes[i % snackTypes.length],
+            collected: false,
+            bounceOffset: Math.random() * Math.PI * 2
+          });
+        }
+      }
+
+      // Move player in direction if no wall
+      function movePlayer(dir) {
+        if (completed) return;
+        const currentCell = grid[player.r][player.c];
+        let targetR = player.r;
+        let targetC = player.c;
+        let blocked = false;
+
+        if (dir === 'up') {
+          if (!currentCell.walls.top && player.r > 0) targetR--;
+          else blocked = true;
+        } else if (dir === 'right') {
+          if (!currentCell.walls.right && player.c < COLS - 1) targetC++;
+          else blocked = true;
+        } else if (dir === 'down') {
+          if (!currentCell.walls.bottom && player.r < ROWS - 1) targetR++;
+          else blocked = true;
+        } else if (dir === 'left') {
+          if (!currentCell.walls.left && player.c > 0) targetC--;
+          else blocked = true;
+        }
+
+        if (blocked) {
+          sound.playWallBump();
+          return;
+        }
+
+        player.r = targetR;
+        player.c = targetC;
+        sound.playMove();
+
+        // Check snack collection
+        snacks.forEach(s => {
+          if (!s.collected && s.r === player.r && s.c === player.c) {
+            s.collected = true;
+            snacksCollected++;
+            sound.playSnack();
+
+            // Spawn floating text & particles
+            const px = OFFSET_X + s.c * CELL_SIZE + CELL_SIZE / 2;
+            const py = OFFSET_Y + s.r * CELL_SIZE + CELL_SIZE / 2;
+            floatingTexts.push({
+              text: '+1 SNACK!',
+              x: px,
+              y: py,
+              alpha: 1.0,
+              vy: -20
+            });
+            for (let i = 0; i < 8; i++) {
+              particles.push({
+                x: px,
+                y: py,
+                vx: (Math.random() - 0.5) * 60,
+                vy: (Math.random() - 0.5) * 60,
+                color: '#f2a900',
+                size: 3,
+                life: 0.4
+              });
+            }
+
+            gameEngine.updateHudSnacks(snacksCollected, totalSnacks);
+          }
+        });
+
+        // Check exit reached
+        if (player.r === exitPos.r && player.c === exitPos.c) {
+          completed = true;
+          if (snacksCollected === 0) {
+            // FAIL: Too efficient!
+            result = {
+              passed: false,
+              message: "FAIL: SUSPICIOUSLY EFFICIENT!\nYou rushed to the exit with 0 snacks. Only a cold, unfeeling bot ignores fresh treats on the way.",
+              snacksCollected,
+              timeSpent: (timeLimit - timeRemaining).toFixed(1)
+            };
+          } else {
+            // PASS: Distracted like a true human!
+            const msg = snacksCollected === 3
+              ? "PASS: 100% MAXIMUM HUMAN!\nYou hunted down ALL THREE snacks! Your gluttony and lack of discipline are a tribute to our species."
+              : `PASS: CERTIFIED HUMAN!\nYou grabbed ${snacksCollected} snack${snacksCollected > 1 ? 's' : ''} instead of taking the optimal path. Beautifully flawed meatbag behavior.`;
+            result = {
+              passed: true,
+              message: msg,
+              snacksCollected,
+              timeSpent: (timeLimit - timeRemaining).toFixed(1)
+            };
+          }
+        }
+      }
+
+      // Input listener bindings
+      function handleKeyDown(e) {
+        if (completed) return;
+        const key = e.key.toLowerCase();
+        let handled = false;
+
+        if (key === 'arrowup' || key === 'w') {
+          movePlayer('up');
+          handled = true;
+        } else if (key === 'arrowright' || key === 'd') {
+          movePlayer('right');
+          handled = true;
+        } else if (key === 'arrowdown' || key === 's') {
+          movePlayer('down');
+          handled = true;
+        } else if (key === 'arrowleft' || key === 'a') {
+          movePlayer('left');
+          handled = true;
+        }
+
+        if (handled) {
+          e.preventDefault();
+        }
+      }
+
+      // Swipe / Touch handlers
+      let touchStartX = 0;
+      let touchStartY = 0;
+
+      function handleTouchStart(e) {
+        if (e.touches.length > 0) {
+          touchStartX = e.touches[0].clientX;
+          touchStartY = e.touches[0].clientY;
+        }
+      }
+
+      function handleTouchEnd(e) {
+        if (completed) return;
+        if (e.changedTouches.length > 0) {
+          const dx = e.changedTouches[0].clientX - touchStartX;
+          const dy = e.changedTouches[0].clientY - touchStartY;
+          const absDx = Math.abs(dx);
+          const absDy = Math.abs(dy);
+
+          if (Math.max(absDx, absDy) > 25) { // Minimum swipe threshold
+            if (absDx > absDy) {
+              if (dx > 0) movePlayer('right');
+              else movePlayer('left');
+            } else {
+              if (dy > 0) movePlayer('down');
+              else movePlayer('up');
+            }
+          }
+        }
+      }
+
+      /* -----------------------------------------------------------
+         COMMON INTERFACE: start(), update(dt), end() -> {passed, message}
+         ----------------------------------------------------------- */
+      return {
+        id: 'snack-maze',
+        title: 'SNACK MAZE',
+        instructions: 'Reach the EXIT! But remember: humans get distracted by snacks.',
+
+        start() {
+          completed = false;
+          result = null;
+          timeRemaining = timeLimit;
+          snacksCollected = 0;
+          particles = [];
+          floatingTexts = [];
+          animTime = 0;
+
+          generateMaze();
+          calculateShortestPath();
+          placeSnacks();
+
+          player.r = 0;
+          player.c = 0;
+          player.drawX = OFFSET_X + 0 * CELL_SIZE + CELL_SIZE / 2;
+          player.drawY = OFFSET_Y + 0 * CELL_SIZE + CELL_SIZE / 2;
+
+          window.addEventListener('keydown', handleKeyDown);
+          gameEngine.canvas.addEventListener('touchstart', handleTouchStart, { passive: true });
+          gameEngine.canvas.addEventListener('touchend', handleTouchEnd, { passive: true });
+
+          gameEngine.updateHudSnacks(0, totalSnacks);
+          gameEngine.updateHudTime(timeRemaining, timeLimit);
+        },
+
+        update(dt) {
+          animTime += dt;
+
+          if (!completed) {
+            timeRemaining -= dt;
+            if (timeRemaining <= 0) {
+              timeRemaining = 0;
+              completed = true;
+              result = {
+                passed: false,
+                message: "FAIL: CAPTCHA TIMEOUT!\n25 seconds expired. Even dial-up was faster than your navigation skills. Are you running on low battery?",
+                snacksCollected,
+                timeSpent: timeLimit.toFixed(1)
+              };
+            }
+            gameEngine.updateHudTime(timeRemaining, timeLimit);
+          }
+
+          // Smooth player draw position interpolation
+          const targetX = OFFSET_X + player.c * CELL_SIZE + CELL_SIZE / 2;
+          const targetY = OFFSET_Y + player.r * CELL_SIZE + CELL_SIZE / 2;
+          player.drawX += (targetX - player.drawX) * Math.min(1, dt * 18);
+          player.drawY += (targetY - player.drawY) * Math.min(1, dt * 18);
+
+          // Update particles
+          for (let i = particles.length - 1; i >= 0; i--) {
+            const p = particles[i];
+            p.x += p.vx * dt;
+            p.y += p.vy * dt;
+            p.life -= dt;
+            if (p.life <= 0) particles.splice(i, 1);
+          }
+
+          // Update floating text
+          for (let i = floatingTexts.length - 1; i >= 0; i--) {
+            const ft = floatingTexts[i];
+            ft.y += ft.vy * dt;
+            ft.alpha -= dt * 1.5;
+            if (ft.alpha <= 0) floatingTexts.splice(i, 1);
+          }
+
+          // If completed, return { passed, message }
+          if (completed && result) {
+            return { status: 'completed', result };
+          }
+          return { status: 'running' };
+        },
+
+        render(ctx) {
+          // Clear Canvas with subtle cream graph-paper pattern
+          ctx.fillStyle = '#f6f2e6';
+          ctx.fillRect(0, 0, ctx.canvas.width, ctx.canvas.height);
+
+          // Draw graph-paper grid lines on canvas
+          ctx.strokeStyle = 'rgba(18, 30, 54, 0.08)';
+          ctx.lineWidth = 1;
+          for (let x = 0; x < ctx.canvas.width; x += 11) {
+            ctx.beginPath();
+            ctx.moveTo(x, 0);
+            ctx.lineTo(x, ctx.canvas.height);
+            ctx.stroke();
+          }
+          for (let y = 0; y < ctx.canvas.height; y += 11) {
+            ctx.beginPath();
+            ctx.moveTo(0, y);
+            ctx.lineTo(ctx.canvas.width, y);
+            ctx.stroke();
+          }
+
+          // Draw Start Marker at (0,0)
+          const startX = OFFSET_X;
+          const startY = OFFSET_Y;
+          ctx.fillStyle = 'rgba(18, 30, 54, 0.08)';
+          ctx.fillRect(startX, startY, CELL_SIZE, CELL_SIZE);
+          ctx.fillStyle = '#121e36';
+          ctx.font = '7px "Press Start 2P"';
+          ctx.textAlign = 'center';
+          ctx.textBaseline = 'middle';
+          ctx.fillText('START', startX + CELL_SIZE / 2, startY + CELL_SIZE / 2);
+
+          // Draw Exit Marker at (ROWS-1, COLS-1)
+          const exitX = OFFSET_X + exitPos.c * CELL_SIZE;
+          const exitY = OFFSET_Y + exitPos.r * CELL_SIZE;
+          const pulse = (Math.sin(animTime * 5) + 1) * 0.5;
+          ctx.fillStyle = `rgba(242, 169, 0, ${0.25 + pulse * 0.25})`;
+          ctx.fillRect(exitX, exitY, CELL_SIZE, CELL_SIZE);
+          ctx.strokeStyle = '#f2a900';
+          ctx.lineWidth = 2;
+          ctx.strokeRect(exitX + 2, exitY + 2, CELL_SIZE - 4, CELL_SIZE - 4);
+
+          ctx.fillStyle = '#121e36';
+          ctx.font = '8px "Press Start 2P"';
+          ctx.textAlign = 'center';
+          ctx.textBaseline = 'middle';
+          ctx.fillText('EXIT', exitX + CELL_SIZE / 2, exitY + CELL_SIZE / 2);
+
+          // Draw Snacks
+          snacks.forEach(s => {
+            if (s.collected) return;
+            const sx = OFFSET_X + s.c * CELL_SIZE + CELL_SIZE / 2;
+            const sy = OFFSET_Y + s.r * CELL_SIZE + CELL_SIZE / 2 + Math.sin(animTime * 6 + s.bounceOffset) * 3;
+
+            // Draw pixel snack badge
+            this.drawPixelSnack(ctx, sx, sy, s.type);
+          });
+
+          // Draw Maze Walls
+          ctx.strokeStyle = '#121e36';
+          ctx.lineWidth = 3.5;
+          ctx.lineCap = 'square';
+
+          for (let r = 0; r < ROWS; r++) {
+            for (let c = 0; c < COLS; c++) {
+              const cell = grid[r][c];
+              const x1 = OFFSET_X + c * CELL_SIZE;
+              const y1 = OFFSET_Y + r * CELL_SIZE;
+              const x2 = x1 + CELL_SIZE;
+              const y2 = y1 + CELL_SIZE;
+
+              ctx.beginPath();
+              if (cell.walls.top) {
+                ctx.moveTo(x1, y1);
+                ctx.lineTo(x2, y1);
+              }
+              if (cell.walls.right) {
+                ctx.moveTo(x2, y1);
+                ctx.lineTo(x2, y2);
+              }
+              if (cell.walls.bottom) {
+                ctx.moveTo(x1, y2);
+                ctx.lineTo(x2, y2);
+              }
+              if (cell.walls.left) {
+                ctx.moveTo(x1, y1);
+                ctx.lineTo(x1, y2);
+              }
+              ctx.stroke();
+            }
+          }
+
+          // Outer maze border outline
+          ctx.strokeStyle = '#121e36';
+          ctx.lineWidth = 4;
+          ctx.strokeRect(OFFSET_X, OFFSET_Y, COLS * CELL_SIZE, ROWS * CELL_SIZE);
+
+          // Draw Particles
+          particles.forEach(p => {
+            ctx.fillStyle = p.color;
+            ctx.fillRect(p.x - p.size / 2, p.y - p.size / 2, p.size, p.size);
+          });
+
+          // Draw Player (Cute pixel-art meatbag / human avatar)
+          this.drawPlayer(ctx, player.drawX, player.drawY);
+
+          // Draw Floating Text
+          floatingTexts.forEach(ft => {
+            ctx.save();
+            ctx.globalAlpha = Math.max(0, ft.alpha);
+            ctx.fillStyle = '#f2a900';
+            ctx.strokeStyle = '#121e36';
+            ctx.lineWidth = 2;
+            ctx.font = '8px "Press Start 2P"';
+            ctx.textAlign = 'center';
+            ctx.strokeText(ft.text, ft.x, ft.y);
+            ctx.fillText(ft.text, ft.x, ft.y);
+            ctx.restore();
+          });
+        },
+
+        drawPixelSnack(ctx, x, y, type) {
+          ctx.save();
+          // Draw a chunky retro snack icon
+          if (type === 'donut') {
+            // Golden Donut with pink frosting & sprinkles
+            ctx.fillStyle = '#f2a900';
+            ctx.fillRect(x - 9, y - 9, 18, 18);
+            ctx.fillStyle = '#ff69b4'; // Pink frosting
+            ctx.fillRect(x - 7, y - 7, 14, 14);
+            ctx.fillStyle = '#f6f2e6'; // Hole
+            ctx.fillRect(x - 3, y - 3, 6, 6);
+            ctx.fillStyle = '#ffffff'; // Sprinkle
+            ctx.fillRect(x - 5, y - 5, 2, 2);
+            ctx.fillStyle = '#121e36'; // Sprinkle
+            ctx.fillRect(x + 3, y - 5, 2, 2);
+          } else if (type === 'pizza') {
+            // Pizza wedge
+            ctx.fillStyle = '#b87a00'; // Crust
+            ctx.fillRect(x - 9, y - 9, 18, 4);
+            ctx.fillStyle = '#f2a900'; // Cheese
+            ctx.beginPath();
+            ctx.moveTo(x - 9, y - 5);
+            ctx.lineTo(x + 9, y - 5);
+            ctx.lineTo(x, y + 9);
+            ctx.closePath();
+            ctx.fill();
+            // Pepperoni dots
+            ctx.fillStyle = '#c0392b';
+            ctx.fillRect(x - 3, y - 3, 3, 3);
+            ctx.fillRect(x + 2, y, 3, 3);
+          } else {
+            // Cookie
+            ctx.fillStyle = '#b87a00';
+            ctx.fillRect(x - 8, y - 8, 16, 16);
+            ctx.fillStyle = '#f2a900';
+            ctx.fillRect(x - 6, y - 6, 12, 12);
+            // Choc chips
+            ctx.fillStyle = '#121e36';
+            ctx.fillRect(x - 4, y - 4, 3, 3);
+            ctx.fillRect(x + 2, y - 2, 3, 3);
+            ctx.fillRect(x - 2, y + 2, 3, 3);
+          }
+          ctx.restore();
+        },
+
+        drawPlayer(ctx, x, y) {
+          ctx.save();
+          const bounce = Math.abs(Math.sin(animTime * 8)) * 2;
+          const py = y - bounce;
+
+          // Head / Body (Chunky retro human avatar)
+          // Navy outline
+          ctx.fillStyle = '#121e36';
+          ctx.fillRect(x - 9, py - 9, 18, 18);
+
+          // Skin / face
+          ctx.fillStyle = '#ffd24d';
+          ctx.fillRect(x - 7, py - 7, 14, 14);
+
+          // Cap / Hair (Navy)
+          ctx.fillStyle = '#121e36';
+          ctx.fillRect(x - 7, py - 7, 14, 5);
+
+          // Eyes (Looking curiously)
+          ctx.fillStyle = '#121e36';
+          ctx.fillRect(x - 4, py - 1, 3, 3);
+          ctx.fillRect(x + 2, py - 1, 3, 3);
+
+          // Little feet
+          ctx.fillStyle = '#121e36';
+          ctx.fillRect(x - 7, py + 8, 5, 3);
+          ctx.fillRect(x + 2, py + 8, 5, 3);
+
+          ctx.restore();
+        },
+
+        handleDirectMove(dir) {
+          movePlayer(dir);
+        },
+
+        findPath(sr, sc, tr, tc) {
+          return findPathBetween(sr, sc, tr, tc);
+        },
+
+        getSnacks() {
+          return snacks;
+        },
+
+        getExitPos() {
+          return exitPos;
+        },
+
+        getPlayerPos() {
+          return { r: player.r, c: player.c };
+        },
+
+        end() {
+          window.removeEventListener('keydown', handleKeyDown);
+          gameEngine.canvas.removeEventListener('touchstart', handleTouchStart);
+          gameEngine.canvas.removeEventListener('touchend', handleTouchEnd);
+          return result || { passed: false, message: 'Challenge terminated.' };
+        }
+      };
+    }
+
+    /* =====================================================================
+       GAME ENGINE & STATE MACHINE (5 Rounds, Shell Flow, Screens)
+       ===================================================================== */
+    class GameEngine {
+      constructor() {
+        this.canvas = document.getElementById('gameCanvas');
+        this.ctx = this.canvas.getContext('2d');
+
+        // Screens
+        this.screenStart = document.getElementById('screen-start');
+        this.screenGame = document.getElementById('screen-game');
+        this.screenFinal = document.getElementById('screen-final');
+        this.modalRound = document.getElementById('modal-round-result');
+
+        // HUD elements
+        this.hudRound = document.getElementById('hud-round');
+        this.hudTitle = document.getElementById('hud-title');
+        this.hudSnacks = document.getElementById('hud-snacks');
+        this.hudTime = document.getElementById('hud-time');
+        this.timerBar = document.getElementById('timer-bar');
+
+        // Game state
+        this.TOTAL_ROUNDS = 5;
+        this.currentRound = 1;
+        this.roundsLog = [];
+        this.activeChallenge = null;
+        this.lastTime = 0;
+        this.rafId = null;
+
+        // Challenge pool (ready for more challenge modules)
+        this.challengePool = [
+          createSnackMazeChallenge
+        ];
+
+        this.initUI();
+      }
+
+      initUI() {
+        // Start screen checkbox interaction
+        const chkContainer = document.getElementById('start-checkbox-row');
+        const chkBox = document.getElementById('start-checkbox');
+        let isChecked = false;
+
+        chkContainer.addEventListener('click', () => {
+          isChecked = !isChecked;
+          chkBox.classList.toggle('checked', isChecked);
+          sound.playMove();
+        });
+
+        // Start button
+        document.getElementById('btn-start').addEventListener('click', () => {
+          chkBox.classList.add('checked');
+          sound.init();
+          sound.playPass();
+          this.startNewGame();
+        });
+
+        // Restart button (Full reset without page reload)
+        document.getElementById('btn-restart').addEventListener('click', () => {
+          sound.playPass();
+          this.startNewGame();
+        });
+
+        // Next round button in modal
+        document.getElementById('btn-modal-next').addEventListener('click', () => {
+          this.modalRound.classList.remove('active');
+          if (this.currentRound < this.TOTAL_ROUNDS) {
+            this.currentRound++;
+            this.startRound(this.currentRound);
+          } else {
+            this.showFinalResults();
+          }
+        });
+
+        // D-Pad buttons
+        document.querySelectorAll('.dpad-btn').forEach(btn => {
+          btn.addEventListener('click', (e) => {
+            e.preventDefault();
+            const dir = btn.getAttribute('data-dir');
+            if (this.activeChallenge && this.activeChallenge.handleDirectMove) {
+              this.activeChallenge.handleDirectMove(dir);
+            }
+          });
+        });
+
+        // SFX toggle
+        const sfxBtn = document.getElementById('sfx-toggle');
+        sfxBtn.addEventListener('click', () => {
+          const enabled = sound.toggle();
+          sfxBtn.textContent = enabled ? 'SFX: ON' : 'SFX: OFF';
+          sfxBtn.style.opacity = enabled ? '1' : '0.6';
+        });
+      }
+
+      showScreen(screen) {
+        this.screenStart.classList.remove('active');
+        this.screenGame.classList.remove('active');
+        this.screenFinal.classList.remove('active');
+        screen.classList.add('active');
+      }
+
+      startNewGame() {
+        this.currentRound = 1;
+        this.roundsLog = [];
+        this.startRound(1);
+      }
+
+      startRound(roundNumber) {
+        if (this.activeChallenge) {
+          this.activeChallenge.end();
+          this.activeChallenge = null;
+        }
+
+        this.showScreen(this.screenGame);
+        this.modalRound.classList.remove('active');
+
+        // Pick challenge from pool (Snack Maze)
+        const factory = this.challengePool[(roundNumber - 1) % this.challengePool.length];
+        this.activeChallenge = factory(this);
+
+        this.hudRound.textContent = `ROUND ${roundNumber} / ${this.TOTAL_ROUNDS}`;
+        this.hudTitle.textContent = this.activeChallenge.title;
+
+        this.activeChallenge.start();
+
+        this.lastTime = performance.now();
+        if (this.rafId) cancelAnimationFrame(this.rafId);
+        this.gameLoop = this.gameLoop.bind(this);
+        this.rafId = requestAnimationFrame(this.gameLoop);
+      }
+
+      gameLoop(currentTime) {
+        const dt = Math.min((currentTime - this.lastTime) / 1000, 0.1);
+        this.lastTime = currentTime;
+
+        if (this.activeChallenge) {
+          const updateResult = this.activeChallenge.update(dt);
+          this.activeChallenge.render(this.ctx);
+
+          if (updateResult.status === 'completed') {
+            const finalEnd = this.activeChallenge.end();
+            this.handleRoundComplete(finalEnd);
+            return; // Stop animation loop for this round
+          }
+        }
+
+        this.rafId = requestAnimationFrame(this.gameLoop);
+      }
+
+      handleRoundComplete(roundResult) {
+        if (this.rafId) cancelAnimationFrame(this.rafId);
+
+        // Record round log
+        this.roundsLog.push({
+          round: this.currentRound,
+          title: this.activeChallenge ? this.activeChallenge.title : 'Challenge',
+          passed: roundResult.passed,
+          message: roundResult.message,
+          snacksCollected: roundResult.snacksCollected || 0,
+          timeSpent: roundResult.timeSpent || '25.0'
+        });
+
+        // Play appropriate sound
+        if (roundResult.passed) {
+          sound.playPass();
+        } else {
+          sound.playFail();
+        }
+
+        // Show Round Modal
+        const stamp = document.getElementById('modal-stamp');
+        const title = document.getElementById('modal-title');
+        const msg = document.getElementById('modal-msg');
+        const statTime = document.getElementById('modal-stat-time');
+        const statSnacks = document.getElementById('modal-stat-snacks');
+        const nextBtn = document.getElementById('btn-modal-next');
+
+        if (roundResult.passed) {
+          stamp.className = 'modal-stamp pass';
+          stamp.textContent = 'PASS';
+          title.textContent = 'HUMAN CONFIRMED';
+        } else {
+          stamp.className = 'modal-stamp fail';
+          stamp.textContent = 'FAIL';
+          title.textContent = 'BOT BEHAVIOR DETECTED';
+        }
+
+        msg.innerText = roundResult.message;
+        statTime.textContent = `TIME: ${roundResult.timeSpent}s`;
+        statSnacks.textContent = `SNACKS: ${roundResult.snacksCollected}/3`;
+
+        if (this.currentRound === this.TOTAL_ROUNDS) {
+          nextBtn.textContent = 'VIEW FINAL RESULTS →';
+        } else {
+          nextBtn.textContent = `ROUND ${this.currentRound + 1} →`;
+        }
+
+        this.modalRound.classList.add('active');
+      }
+
+      showFinalResults() {
+        if (this.activeChallenge) {
+          this.activeChallenge.end();
+          this.activeChallenge = null;
+        }
+
+        this.showScreen(this.screenFinal);
+
+        const passedCount = this.roundsLog.filter(r => r.passed).length;
+        const totalCount = this.roundsLog.length;
+        const percent = Math.round((passedCount / totalCount) * 100);
+
+        const verdictTitle = document.getElementById('final-verdict-title');
+        const summaryText = document.getElementById('final-summary-text');
+        const evalMessage = document.getElementById('final-evaluation-message');
+        const roundList = document.getElementById('final-round-list');
+
+        summaryText.textContent = `HUMANITY SCORE: ${passedCount} / ${totalCount} (${percent}%)`;
+
+        if (passedCount >= 3) {
+          verdictTitle.textContent = 'VERDICT: (PROBABLY) HUMAN';
+          verdictTitle.style.background = 'var(--gold-accent)';
+          evalMessage.textContent = 'CERTIFIED ORGANIC: You demonstrated consistent human weaknesses—easily distracted, tempted by junk food, and gloriously suboptimal.';
+        } else {
+          verdictTitle.textContent = 'VERDICT: SUSPICIOUSLY SYNTHETIC';
+          verdictTitle.style.background = 'var(--fail-red)';
+          verdictTitle.style.color = '#fff';
+          evalMessage.textContent = 'FLAGGED AS BOT: You exhibited cold, hyper-efficient navigation with a disturbing lack of interest in snacks. Please report to the nearest captcha recertification facility.';
+        }
+
+        // Populate round breakdown
+        roundList.innerHTML = '';
+        this.roundsLog.forEach(r => {
+          const li = document.createElement('li');
+          li.className = 'round-log-item';
+          li.innerHTML = `
+            <span>R${r.round}: ${r.title}</span>
+            <span>${r.snacksCollected} snacks · ${r.timeSpent}s</span>
+            <span class="${r.passed ? 'tag-pass' : 'tag-fail'}">${r.passed ? 'PASS' : 'FAIL'}</span>
+          `;
+          roundList.appendChild(li);
+        });
+      }
+
+      updateHudSnacks(collected, total) {
+        this.hudSnacks.textContent = `SNACKS: ${collected}/${total}`;
+        if (collected > 0) {
+          this.hudSnacks.style.background = 'var(--gold-accent)';
+          this.hudSnacks.style.color = 'var(--navy-dark)';
+        } else {
+          this.hudSnacks.style.background = 'var(--bg-cream)';
+          this.hudSnacks.style.color = 'var(--navy-dark)';
+        }
+      }
+
+      updateHudTime(timeRemaining, timeLimit) {
+        this.hudTime.textContent = `TIME: ${timeRemaining.toFixed(1)}s`;
+        const pct = Math.max(0, (timeRemaining / timeLimit) * 100);
+        this.timerBar.style.width = `${pct}%`;
+
+        if (pct < 25) {
+          this.timerBar.classList.add('critical');
+        } else {
+          this.timerBar.classList.remove('critical');
+        }
+      }
+
+      autoplay(mode = 'human', delay = 35, onDone = null) {
+        if (!this.activeChallenge) return;
+        const c = this.activeChallenge;
+        const exit = c.getExitPos();
+        const snacks = c.getSnacks();
+        let steps = [];
+
+        if (mode === 'human') {
+          // Human behavior: visits at least one or two snacks before going to exit!
+          let curr = c.getPlayerPos();
+          const uncollected = snacks.filter(s => !s.collected);
+          if (uncollected.length > 0) {
+            const snack1 = uncollected[0];
+            const p1 = c.findPath(curr.r, curr.c, snack1.r, snack1.c);
+            let p2 = [];
+            if (uncollected.length > 1) {
+              const snack2 = uncollected[1];
+              const p1_to_p2 = c.findPath(snack1.r, snack1.c, snack2.r, snack2.c);
+              const p2_to_exit = c.findPath(snack2.r, snack2.c, exit.r, exit.c);
+              p2 = [...p1_to_p2, ...p2_to_exit];
+            } else {
+              p2 = c.findPath(snack1.r, snack1.c, exit.r, exit.c);
+            }
+            steps = [...p1, ...p2];
+          } else {
+            steps = c.findPath(curr.r, curr.c, exit.r, exit.c);
+          }
+        } else if (mode === 'bot') {
+          // Bot behavior: ignores all snacks, takes shortest path straight to exit!
+          const curr = c.getPlayerPos();
+          steps = c.findPath(curr.r, curr.c, exit.r, exit.c);
+        }
+
+        let stepIndex = 0;
+        const timer = setInterval(() => {
+          if (stepIndex >= steps.length || !this.activeChallenge) {
+            clearInterval(timer);
+            if (onDone) onDone();
+            return;
+          }
+          this.activeChallenge.handleDirectMove(steps[stepIndex]);
+          stepIndex++;
+        }, delay);
+      }
+    }
+
+    // Initialize game once DOM is loaded
+    window.addEventListener('DOMContentLoaded', () => {
+      window.game = new GameEngine();
+
+      // Check query parameters for testing/automation
+      const params = new URLSearchParams(window.location.search);
+      const testScreen = params.get('screen');
+
+      if (testScreen === 'pass') {
+        window.game.startNewGame();
+        window.game.handleRoundComplete({
+          passed: true,
+          message: "PASS: CERTIFIED HUMAN!\nYou grabbed 2 snacks instead of taking the optimal route. Beautifully flawed meatbag behavior.",
+          snacksCollected: 2,
+          timeSpent: '14.2'
+        });
+      } else if (testScreen === 'fail') {
+        window.game.startNewGame();
+        window.game.handleRoundComplete({
+          passed: false,
+          message: "FAIL: SUSPICIOUSLY EFFICIENT!\nYou rushed to the exit with 0 snacks. Only a cold, unfeeling bot ignores fresh treats on the way.",
+          snacksCollected: 0,
+          timeSpent: '8.3'
+        });
+      } else if (testScreen === 'final') {
+        window.game.roundsLog = [
+          { round: 1, title: 'Snack Maze', passed: true, snacksCollected: 2, timeSpent: '12.4' },
+          { round: 2, title: 'Snack Maze', passed: true, snacksCollected: 3, timeSpent: '18.1' },
+          { round: 3, title: 'Snack Maze', passed: false, snacksCollected: 0, timeSpent: '7.9' },
+          { round: 4, title: 'Snack Maze', passed: true, snacksCollected: 1, timeSpent: '15.6' },
+          { round: 5, title: 'Snack Maze', passed: true, snacksCollected: 2, timeSpent: '13.8' }
+        ];
+        window.game.showFinalResults();
+      } else if (params.get('autostart') === '1') {
+        window.game.startNewGame();
+        const autoplay = params.get('autoplay');
+        if (autoplay === 'human' || autoplay === 'bot') {
+          setTimeout(() => {
+            window.game.autoplay(autoplay, 20);
+          }, 300);
+        }
+      }
+    });
+  </script>
+</body>
+</html>
